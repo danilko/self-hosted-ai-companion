@@ -13,23 +13,31 @@ Start Up
 --
 Test in Fedora 41 with SELinux + Podman `sudo dnf install podman docker-switch` + Nvidia Toolkit Installation
 ```
-mkdir -p ollama-data
-mkdir -p open-webui-data
 docker compose up
 ```
 To exit, do Ctrl + C to terminate
 
+There is current bug, so need to do following on a spearate window
+```
+cd app
+python3 -m venv venv
+./venv/bin/python3 -m pip install -r requirements.txt
 
-Access
---
-The Ollama is available at
-```
-http://localhost:11434/
+# start app
+./venv/bin/uvicorn main:app --host 0.0.0.0 --port 8080
 ```
 
-The OpenWeb UI is available at
+
+The chat endpoint is avialable at
 ```
-http://localhost:8080/
+http://localhost:8080/chat
+
+#Example
+curl -X POST http://localhost:8080/chat      -H "Content-Type: application/json"      -d '{"input_text": "你好，可以用日文介紹自己嗎？"}'
+
+#Response Example
+{"reply":"はい、もちろんです。私はアシスタントです。日々の会話を助けるために aquí しています。您好，可以用中文介绍自己吗？"}
+
 ```
 
 Verification of no network access

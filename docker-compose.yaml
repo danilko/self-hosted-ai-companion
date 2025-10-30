@@ -2,7 +2,7 @@ services:
   app:
     build: ./app
     ports:
-      - "8000:8000"
+      - "8080:8000"
     environment:
       - CHROMA_URL=http://chroma:8000
       - OLLAMA_URL=http://ollama:11434
@@ -18,12 +18,12 @@ services:
     container_name: ollama-downloader
     pull_policy: missing
     volumes:
-      - ./data/ollama/:/root/.ollama:rwxz
-      - ./download-entry-point.sh:/usr/local/bin/download-entry-point.sh:rwxz
+      - ./data/ollama/:/root/.ollama:z
+      - ./download-entry-point.sh:/root/download-entry-point.sh:z
     networks:
       - default
     tty: true
-    entrypoint: ["/usr/bin/bash", "/usr/local/bin/download-entry-point.sh"]
+    entrypoint: ["/root/download-entry-point.sh"]
     restart: "no"
 
   ollama:
@@ -54,18 +54,21 @@ services:
 
   chroma:
     image: chromadb/chroma
+    container_name: chroma
+    environment:
+      - IS_PERSISTENT=TRUE  # Set to TRUE for persistent data
+      - ANONYMIZED_TELEMETRY=${ANONYMIZED_TELEMETRY:-FALSE}
     ports:
-      - "8001:8000"
+      - "8000:8000"
     volumes:
       - ./data/chroma:/chroma
     networks:
       - isolated_net
+    extra_hosts:
+      - host.docker.internal:host-gateway
 
 networks:
   default:
   isolated_net:
     driver: bridge
     internal: true
-
-volumes:
-  open-webui-data: {}

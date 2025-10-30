@@ -1,0 +1,71 @@
+services:
+  app:
+    build: ./app
+    ports:
+      - "8000:8000"
+    environment:
+      - CHROMA_URL=http://chroma:8000
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      - chroma
+      - ollama
+    volumes:
+      - ./data/app:/data:rwxz
+
+  # download ollama model with allow network access
+  ollama-downloader:
+    image: docker.io/ollama/ollama:latest
+    container_name: ollama-downloader
+    pull_policy: missing
+    volumes:
+      - ./data/ollama/:/root/.ollama:rwxz
+      - ./download-entry-point.sh:/usr/local/bin/download-entry-point.sh:rwxz
+    networks:
+      - default
+    tty: true
+    entrypoint: ["/usr/bin/bash", "/usr/local/bin/download-entry-point.sh"]
+    restart: "no"
+
+  ollama:
+    depends_on:
+      - ollama-downloader
+    image: docker.io/ollama/ollama:latest
+    pull_policy: missing
+    container_name: ollama
+    tty: true
+    volumes:
+      - ./data/ollama/:/root/.ollama:z
+    networks:
+      - isolated_net
+    ports:
+      - "11434:11434"  # optional if exposing to host
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - CUDA_VISIBLE_DEVICES=0
+      - LOG_LEVEL=debug
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
+
+  chroma:
+    image: chromadb/chroma
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./data/chroma:/chroma
+    networks:
+      - isolated_net
+
+networks:
+  default:
+  isolated_net:
+    driver: bridge
+    internal: true
+
+volumes:
+  open-webui-data: {}

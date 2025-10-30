@@ -1,13 +1,8 @@
-# offline-ollama-docker-compose
-Sample Docker Compose for Offline Ollama Usage
+# self-hosted-ai-companion
+Small experimental project to setup self-hosted-ai-companion
 
 Overall Explanation
 --
-
-Sample Example to use docker-compose to:
-1. Perform download of ollama model with a container with network access into a share docker volume and auto stop
-2. Run the ollama model on a container with bridge network with no external network access
-3. Run the OpenWeb UI on another container with above bridge network with no external access
 
 Start Up
 --
